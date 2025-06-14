@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,7 +20,8 @@ export default function Index() {
       try {
         const { pipeline } = await import('@huggingface/transformers');
         // The library now handles quantization automatically for many models.
-        classifier.current = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english');
+        // We add an explicit type cast here to resolve the complex union type error.
+        classifier.current = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english') as TextClassificationPipeline;
         setModelReady(true);
       } catch (error) {
         console.error("Failed to load model:", error);
