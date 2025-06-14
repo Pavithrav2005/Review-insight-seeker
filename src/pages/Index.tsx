@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,25 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ThumbsUp, ThumbsDown, Loader2, Wand2 } from 'lucide-react';
 import { SentimentChart } from '@/components/SentimentChart';
 import { ReviewList } from '@/components/ReviewList';
-
-// Type definition for the sentiment analysis pipeline
-type SentimentPipeline = (text: string | string[], options?: any) => Promise<{ label: 'POSITIVE' | 'NEGATIVE', score: number }[]>;
+import type { TextClassificationPipeline } from '@huggingface/transformers';
 
 export default function Index() {
   const [inputText, setInputText] = useState('');
   const [results, setResults] = useState<{ label: 'POSITIVE' | 'NEGATIVE', score: number, text: string }[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [modelReady, setModelReady] = useState(false);
-  const classifier = useRef<SentimentPipeline | null>(null);
+  const classifier = useRef<TextClassificationPipeline | null>(null);
 
   useEffect(() => {
     const loadModel = async () => {
       try {
         const { pipeline } = await import('@huggingface/transformers');
-        // Load a quantized version of the model for faster inference and smaller size
-        classifier.current = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english', {
-          quantized: true,
-        });
+        // The library now handles quantization automatically for many models.
+        classifier.current = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english');
         setModelReady(true);
       } catch (error) {
         console.error("Failed to load model:", error);
@@ -51,7 +46,8 @@ export default function Index() {
       text: reviewText,
     }));
 
-    setResults(combinedResults);
+    // We cast the result to our specific type, as we know this model returns 'POSITIVE' or 'NEGATIVE'.
+    setResults(combinedResults as { label: 'POSITIVE' | 'NEGATIVE', score: number, text: string }[]);
     setIsAnalyzing(false);
   };
   
