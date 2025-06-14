@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ThumbsUp, ThumbsDown, Loader2, Wand2, Sparkles, Trash2, ListChecks } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader2, Wand2, Sparkles, Trash2, ListChecks, Download } from 'lucide-react';
 import { SentimentChart } from '@/components/SentimentChart';
 import { ReviewList } from '@/components/ReviewList';
 import type { TextClassificationPipeline } from '@huggingface/transformers';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useToast } from "@/hooks/use-toast";
 
 const allExampleReviews = [
   "I absolutely love this product! The quality is outstanding and it exceeded my expectations.",
@@ -134,6 +135,7 @@ export default function Index() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [modelReady, setModelReady] = useState(false);
   const classifier = useRef<TextClassificationPipeline | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const loadModel = async () => {
@@ -179,11 +181,49 @@ export default function Index() {
     const count = Math.floor(Math.random() * 10) + 51; // 51 to 60 reviews
     const selectedReviews = shuffled.slice(0, count);
     setInputText(selectedReviews.join('\n'));
+    toast({
+      title: "Examples Loaded",
+      description: `Loaded ${count} example reviews.`,
+    });
   };
 
   const handleClear = () => {
     setInputText('');
     setResults([]);
+    toast({
+      title: "Cleared",
+      description: "Input text and analysis results have been cleared.",
+    });
+  };
+
+  const handleExport = () => {
+    if (results.length === 0) return;
+
+    const headers = ["text", "label", "score"];
+    const csvContent = [
+      headers.join(","),
+      ...results.map(r => {
+        const text = `"${r.text.replace(/"/g, '""')}"`;
+        return [text, r.label, r.score].join(",");
+      })
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "review_analysis_export.csv");
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+    toast({
+      title: "Export Successful",
+      description: "Your review analysis has been exported as a CSV file.",
+    });
   };
 
   const positiveReviews = results.filter(r => r.label === 'POSITIVE');
@@ -257,7 +297,13 @@ export default function Index() {
           <div className="mt-8 space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle>Analysis Summary</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <CardTitle>Analysis Summary</CardTitle>
+                  <Button variant="outline" onClick={handleExport} size="sm">
+                    <Download />
+                    Export as CSV
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
