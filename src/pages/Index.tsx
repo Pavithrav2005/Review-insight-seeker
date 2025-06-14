@@ -9,14 +9,24 @@ import type { TextClassificationPipeline } from '@huggingface/transformers';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-const exampleReviews = [
+const allExampleReviews = [
   "I absolutely love this product! The quality is outstanding and it exceeded my expectations.",
   "The customer service was fantastic, they were so helpful and responsive.",
   "This is a complete waste of money. It broke after just one week.",
   "I'm very disappointed with my purchase. It doesn't work as advertised.",
   "An average product. It does the job but nothing special about it.",
-  "Shipping was incredibly fast, it arrived two days earlier than expected!"
-].join('\n');
+  "Shipping was incredibly fast, it arrived two days earlier than expected!",
+  "The product arrived damaged. Very poor packaging.",
+  "Works like a charm! I would definitely recommend this to anyone.",
+  "It's okay, but not worth the price. You can find better alternatives.",
+  "The manual is very confusing. I had a hard time setting it up.",
+  "Five stars! Best purchase I've made all year.",
+  "The battery life is terrible. It dies after only a couple of hours.",
+  "What a great deal! The quality for this price is unbelievable.",
+  "I had an issue with my order and the support team resolved it within minutes. Excellent service!",
+  "The color is not the same as shown in the picture. I'm returning it.",
+  "It's a bit smaller than I expected, but it works well.",
+];
 
 export default function Index() {
   const [inputText, setInputText] = useState('');
@@ -65,7 +75,10 @@ export default function Index() {
   };
   
   const handleLoadExamples = () => {
-    setInputText(exampleReviews);
+    const shuffled = [...allExampleReviews].sort(() => 0.5 - Math.random());
+    const count = Math.floor(Math.random() * 2) + 4; // 4 or 5 reviews
+    const selectedReviews = shuffled.slice(0, count);
+    setInputText(selectedReviews.join('\n'));
   };
 
   const handleClear = () => {
