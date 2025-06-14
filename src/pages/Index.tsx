@@ -19,9 +19,10 @@ export default function Index() {
     const loadModel = async () => {
       try {
         const { pipeline } = await import('@huggingface/transformers');
-        // The library now handles quantization automatically for many models.
-        // We add an explicit type cast here to resolve the complex union type error.
-        classifier.current = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english') as TextClassificationPipeline;
+        // To bypass a TypeScript error with overly complex union types from the pipeline function,
+        // we assign the result to a variable of type 'any' before assigning it to the ref.
+        const myPipeline: any = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english');
+        classifier.current = myPipeline;
         setModelReady(true);
       } catch (error) {
         console.error("Failed to load model:", error);
