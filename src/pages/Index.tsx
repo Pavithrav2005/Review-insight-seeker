@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +7,7 @@ import { SentimentChart } from '@/components/SentimentChart';
 import { ReviewList } from '@/components/ReviewList';
 import type { TextClassificationPipeline } from '@huggingface/transformers';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const exampleReviews = [
   "I absolutely love this product! The quality is outstanding and it exceeded my expectations.",
@@ -78,7 +78,10 @@ export default function Index() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <header className="text-center mb-8">
+      <header className="relative text-center mb-8">
+        <div className="absolute top-0 right-0">
+          <ThemeToggle />
+        </div>
         <h1 className="text-4xl font-bold tracking-tight lg:text-5xl flex items-center justify-center gap-2">
           <Wand2 className="w-10 h-10 text-primary" />
           Review Insight Seeker
