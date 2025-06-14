@@ -3,10 +3,20 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ThumbsUp, ThumbsDown, Loader2, Wand2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader2, Wand2, Sparkles, Trash2, ListChecks } from 'lucide-react';
 import { SentimentChart } from '@/components/SentimentChart';
 import { ReviewList } from '@/components/ReviewList';
 import type { TextClassificationPipeline } from '@huggingface/transformers';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const exampleReviews = [
+  "I absolutely love this product! The quality is outstanding and it exceeded my expectations.",
+  "The customer service was fantastic, they were so helpful and responsive.",
+  "This is a complete waste of money. It broke after just one week.",
+  "I'm very disappointed with my purchase. It doesn't work as advertised.",
+  "An average product. It does the job but nothing special about it.",
+  "Shipping was incredibly fast, it arrived two days earlier than expected!"
+].join('\n');
 
 export default function Index() {
   const [inputText, setInputText] = useState('');
@@ -54,6 +64,15 @@ export default function Index() {
     setIsAnalyzing(false);
   };
   
+  const handleLoadExamples = () => {
+    setInputText(exampleReviews);
+  };
+
+  const handleClear = () => {
+    setInputText('');
+    setResults([]);
+  };
+
   const positiveReviews = results.filter(r => r.label === 'POSITIVE');
   const negativeReviews = results.filter(r => r.label === 'NEGATIVE');
 
@@ -73,7 +92,13 @@ export default function Index() {
         <Card>
           <CardHeader>
             <CardTitle>Enter Product Reviews</CardTitle>
-            <CardDescription>Place each review on a new line for best results.</CardDescription>
+            <div className="flex justify-between items-center">
+              <CardDescription>Place each review on a new line for best results.</CardDescription>
+              <Button variant="link" onClick={handleLoadExamples} className="p-0 h-auto text-primary">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Load examples
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
@@ -83,19 +108,74 @@ export default function Index() {
               rows={8}
               className="resize-y"
             />
-            <Button onClick={handleAnalyze} disabled={!modelReady || isAnalyzing || !inputText.trim()} className="w-full">
-              {isAnalyzing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : !modelReady ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              {isAnalyzing ? 'Analyzing...' : !modelReady ? 'Model Loading...' : 'Analyze Reviews'}
-            </Button>
+            <div className="flex flex-row gap-2">
+              <Button onClick={handleAnalyze} disabled={!modelReady || isAnalyzing || !inputText.trim()} className="flex-grow">
+                {isAnalyzing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : !modelReady ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                {isAnalyzing ? 'Analyzing...' : !modelReady ? 'Model Loading...' : 'Analyze Reviews'}
+              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleClear} 
+                    disabled={isAnalyzing || (!inputText.trim() && results.length === 0)}
+                    className="sm:w-auto"
+                    aria-label="Clear input and results"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Clear input and results</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </CardContent>
         </Card>
 
         {results.length > 0 && (
           <div className="mt-8 space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Analysis Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
+                      <ListChecks className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{results.length}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Positive Reviews</CardTitle>
+                      <ThumbsUp className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-green-500">{positiveReviews.length}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Negative Reviews</CardTitle>
+                      <ThumbsDown className="h-4 w-4 text-red-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-red-500">{negativeReviews.length}</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Sentiment Overview</CardTitle>
