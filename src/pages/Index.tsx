@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -177,7 +176,7 @@ export default function Index() {
   
   const handleLoadExamples = () => {
     const shuffled = [...allExampleReviews].sort(() => 0.5 - Math.random());
-    const count = Math.floor(Math.random() * 2) + 4; // 4 or 5 reviews
+    const count = Math.floor(Math.random() * 10) + 51; // 51 to 60 reviews
     const selectedReviews = shuffled.slice(0, count);
     setInputText(selectedReviews.join('\n'));
   };
